@@ -44,10 +44,81 @@
       <li><b>Teléfono</b> <a href="tel:+34623054388">623 05 43 88</a></li>
       <li><b>Correo</b> <a href="mailto:info@basal-ai.com">info@basal-ai.com</a></li>
     </ul>
-    <div class="note">
+    <div class="note" id="aviso-sin-formulario">
       El formulario de contacto estará disponible en breve. Mientras tanto, escríbenos a
       <a href="mailto:info@basal-ai.com">info@basal-ai.com</a> o llámanos: contestamos igual de rápido.
     </div>
+
+    <!-- Formulario listo. Para activarlo: poner ENDPOINT abajo, quitar el hidden de
+         este <form> y añadirlo a #aviso-sin-formulario. Ver worker/contacto-worker.js -->
+    <form id="formulario" hidden novalidate>
+      <label for="f-nombre">Nombre</label>
+      <input id="f-nombre" name="nombre" type="text" maxlength="100" required autocomplete="name">
+
+      <label for="f-email">Correo electrónico</label>
+      <input id="f-email" name="email" type="email" maxlength="150" required autocomplete="email">
+
+      <label for="f-mensaje">Mensaje</label>
+      <textarea id="f-mensaje" name="mensaje" rows="5" maxlength="4000" required></textarea>
+
+      <!-- Campo trampa para bots: invisible y sin foco para personas. -->
+      <div class="trampa" aria-hidden="true">
+        <label for="f-web">No rellenar</label>
+        <input id="f-web" name="web" type="text" tabindex="-1" autocomplete="off">
+      </div>
+
+      <label class="check">
+        <input id="f-consent" name="consentimiento" type="checkbox" required>
+        <span>He leído y acepto la <a href="privacidad.html">política de privacidad</a>. Consiento
+        el tratamiento de mis datos con la única finalidad de responder a esta consulta.</span>
+      </label>
+
+      <button type="submit">Enviar mensaje</button>
+      <p id="f-estado" role="status" aria-live="polite"></p>
+    </form>
+
+    <script>
+      // Poner aquí la URL del Worker desplegado (worker/contacto-worker.js).
+      const ENDPOINT = "";
+
+      const form = document.getElementById("formulario");
+      const estado = document.getElementById("f-estado");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if (!ENDPOINT) { estado.textContent = "El formulario aún no está activo."; return; }
+        if (!form.reportValidity()) return;
+
+        const boton = form.querySelector("button");
+        boton.disabled = true;
+        estado.textContent = "Enviando…";
+
+        try {
+          const r = await fetch(ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              nombre: form.nombre.value,
+              email: form.email.value,
+              mensaje: form.mensaje.value,
+              web: form.web.value,
+              consentimiento: form.consentimiento.checked,
+            }),
+          });
+          const d = await r.json().catch(() => ({}));
+          if (r.ok && d.ok) {
+            form.reset();
+            estado.textContent = "Mensaje enviado. Te respondemos en cuanto podamos.";
+          } else {
+            estado.textContent = "No se ha podido enviar. Escríbenos a info@basal-ai.com.";
+          }
+        } catch {
+          estado.textContent = "No se ha podido enviar. Escríbenos a info@basal-ai.com.";
+        } finally {
+          boton.disabled = false;
+        }
+      });
+    </script>
   </section>
 
   <footer>

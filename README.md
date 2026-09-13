@@ -13,10 +13,21 @@ Sitio estático servido por GitHub Pages. Sin dependencias externas, sin cookies
 Diseño y decisiones: repo privado `Trapaso-infra-Basal`,
 `arquitectura/30-plan/WEB_MINIMA_BASAL_20260913.md` y `ADR-027`.
 
-## Pendiente
+## Pendiente: activar el formulario
 
-Formulario de contacto vía Cloudflare Worker (requiere credenciales de Cloudflare
-y un bot de Telegram propio). Mientras tanto, la página ofrece teléfono y correo.
+El formulario **ya está escrito** (HTML, CSS y JS en `index.html`, backend en
+`worker/contacto-worker.js`) pero está **desactivado**, porque desplegarlo necesita
+credenciales que no estaban disponibles al publicar: una cuenta de Cloudflare y un
+bot de Telegram **propio de la empresa** (no el de operaciones).
+
+Para activarlo, tres pasos:
+
+1. Desplegar `worker/contacto-worker.js` en Cloudflare (instrucciones en su cabecera).
+   Las dos credenciales van al Vaultwarden de la nube, organización Basal.
+2. En `index.html`, poner la URL del Worker en `const ENDPOINT = ""`.
+3. Quitar `hidden` del `<form id="formulario">` y añadírselo a `#aviso-sin-formulario`.
+
+Mientras tanto la página ofrece teléfono y correo, que funcionan.
 
 ## Bloque de subvención
 
